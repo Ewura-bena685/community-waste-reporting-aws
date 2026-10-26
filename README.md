@@ -2,6 +2,9 @@
 
 <img width="1531" height="748" alt="image" src="https://github.com/user-attachments/assets/0a6f71a3-e2d2-46fa-a233-21927e971825" />
 
+<img width="1441" height="644" alt="architecture" src="https://github.com/user-attachments/assets/5198923f-3124-417e-963e-fd82e2d2f113" />
+
+
 
 A serverless app where residents report illegal dumping, overflowing bins and missed collections, with a
 public dashboard and an admin-only way to mark reports in progress or resolved. This was started with an AWS Architecture Advisor’s starter kit and then extended
