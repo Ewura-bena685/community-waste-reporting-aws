@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Community Waste Reporting</title>
+  <style>
+    :root {
+      --bg:#f3f7f4; --surface:#fff; --text:#13231a; --muted:#587062; --line:#dbe5de; --brand:#1f7a4d; --brand-ink:#fff;
+      --danger:#b3261e; --shadow:0 1px 2px rgb(16 40 26/.06),0 8px 24px rgb(16 40 26/.08);
+      --open-bg:#fff1d6; --open-fg:#8a5a00; --prog-bg:#dbeafe; --prog-fg:#1e4fa3; --done-bg:#d9f2e3; --done-fg:#16623b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0d1511; --surface:#16211a; --text:#e8f1ea; --muted:#9db2a4; --line:#263629; --brand:#4fbf85; --brand-ink:#07140c;
+        --danger:#f2837b; --shadow:0 1px 2px #0006,0 8px 24px #0005;
+        --open-bg:#3a2e12; --open-fg:#f3c76a; --prog-bg:#16284a; --prog-fg:#8db6f5; --done-bg:#143824; --done-fg:#7fd9a4; }
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; font:16px/1.55 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text); }
+    .wrap { max-width:72rem; margin:0 auto; padding:0 1.25rem; }
+    .hero { background:radial-gradient(60rem 20rem at 85% -20%,#3aa56d55,transparent),linear-gradient(135deg,#0f3d25,#1f7a4d); color:#fff; padding:3rem 0 5.5rem; }
+    .eyebrow { display:inline-block; margin:0 0 .75rem; padding:.2rem .7rem; border:1px solid #ffffff55; border-radius:999px; font-size:.8rem; letter-spacing:.06em; text-transform:uppercase; }
+    h1 { margin:0 0 .5rem; font-size:clamp(1.8rem,4vw,2.8rem); line-height:1.15; letter-spacing:-.02em; }
+    .lead { margin:0; max-width:38rem; font-size:1.1rem; color:#e1f2e8; }
+    main { margin-top:-3rem; padding-bottom:2rem; }
+    .layout { display:grid; gap:1.25rem; align-items:start; }
+    @media (min-width:60rem) { .layout { grid-template-columns:22rem 1fr; } .form-card { position:sticky; top:1rem; } }
+    .card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:1.5rem; box-shadow:var(--shadow); min-width:0; }
+    h2 { margin:0 0 .25rem; font-size:1.25rem; letter-spacing:-.01em; }
+    .sub { margin:0 0 1rem; color:var(--muted); font-size:.95rem; }
+    label { display:block; margin:1rem 0 .35rem; font-size:.9rem; font-weight:600; }
+    input,select,textarea,button { font:inherit; color:inherit; }
+    input,select,textarea { width:100%; padding:.65rem .8rem; background:var(--bg); border:1px solid var(--line); border-radius:10px; transition:border-color .15s,box-shadow .15s; }
+    select { appearance:none; padding-right:2.2rem; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23788' stroke-width='2'%3E%3Cpath d='m1 1 5 5 5-5'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right .8rem center; }
+    textarea { resize:vertical; min-height:6rem; }
+    input:focus-visible,select:focus-visible,textarea:focus-visible { outline:none; border-color:var(--brand); box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 28%,transparent); }
+    button { cursor:pointer; padding:.7rem 1.2rem; border:0; border-radius:10px; background:var(--brand); color:var(--brand-ink); font-weight:600; transition:transform .1s,filter .15s; }
+    button:hover { filter:brightness(1.08); } button:active { transform:translateY(1px); }
+    button:focus-visible { outline:3px solid color-mix(in srgb,var(--brand) 45%,transparent); outline-offset:2px; }
+    .form-card button { width:100%; margin-top:1.1rem; }
+    button.small { width:auto; margin:0 .35rem .25rem 0; padding:.25rem .7rem; font-size:.8rem; background:transparent; color:var(--brand); border:1px solid var(--brand); }
+    button.small:hover { background:var(--brand); color:var(--brand-ink); filter:none; }
+    .count { display:block; margin-top:.25rem; text-align:right; font-size:.8rem; color:var(--muted); }
+    .row { display:flex; gap:.75rem; flex-wrap:wrap; align-items:flex-end; }
+    .row > div { flex:1 1 11rem; } .row label { margin-top:0; } .row button { width:auto; margin:0; }
+    .msg { min-height:1.4rem; margin:.75rem 0 0; font-size:.92rem; color:var(--muted); } .msg.error { color:var(--danger); font-weight:600; }
+    .table-wrap { margin-top:.5rem; overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; }
+    th { text-align:left; padding:.6rem .5rem; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); border-bottom:2px solid var(--line); }
+    td { padding:.8rem .5rem; border-bottom:1px solid var(--line); vertical-align:top; overflow-wrap:anywhere; }
+    tbody tr:hover { background:color-mix(in srgb,var(--brand) 6%,transparent); }
+    td:first-child { white-space:nowrap; color:var(--muted); font-size:.9rem; } td:nth-child(3) { text-transform:capitalize; }
+    .badge { display:inline-block; padding:.15rem .65rem; border-radius:999px; font-size:.8rem; font-weight:600; text-transform:capitalize; white-space:nowrap; }
+    .badge.open { background:var(--open-bg); color:var(--open-fg); } .badge.in-progress { background:var(--prog-bg); color:var(--prog-fg); } .badge.resolved { background:var(--done-bg); color:var(--done-fg); }
+    details { margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--line); } summary { cursor:pointer; font-weight:600; color:var(--muted); }
+    footer { padding:1rem 1.25rem 2.5rem; text-align:center; color:var(--muted); font-size:.85rem; }
+    @media (max-width:40rem) {
+      thead { display:none; } tr { display:block; padding:.75rem 0; border-bottom:1px solid var(--line); } td { display:flex; gap:.75rem; padding:.2rem 0; border:0; }
+      td::before { flex:0 0 5.5rem; font-size:.75rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
+      td:nth-child(1)::before { content:"Reported"; } td:nth-child(2)::before { content:"Area"; } td:nth-child(3)::before { content:"Type"; }
+      td:nth-child(4)::before { content:"Details"; } td:nth-child(5)::before { content:"Status"; } td:nth-child(6)::before { content:"Admin"; }
+    }
+    @media (prefers-reduced-motion:reduce) { * { transition:none !important; scroll-behavior:auto !important; } }
+  </style>
+</head>
+<body>
+  <header class="hero"><div class="wrap">
+    <p class="eyebrow">Serverless on AWS</p>
+    <h1>Community Waste Reporting</h1>
+    <p class="lead">Spotted illegal dumping, an overflowing bin or a missed collection? Report it so it can be dealt with.</p>
+  </div></header>
+
+  <main class="wrap">
+    <p id="config-error" class="msg error" hidden>The API address is missing. Deploy with scripts/deploy.sh, which creates config.js.</p>
+    <div class="layout">
+      <section class="card form-card">
+        <h2>Report a problem</h2>
+        <p class="sub">It takes under a minute.</p>
+        <form id="report-form">
+          <label for="area">Area</label>
+          <input id="area" name="area" placeholder="e.g. downtown" maxlength="500" required>
+          <label for="category">What happened?</label>
+          <select id="category" name="category" required>
+            <option value="illegal-dumping">Illegal dumping</option>
+            <option value="overflowing-bin">Overflowing bin</option>
+            <option value="missed-collection">Missed collection</option>
+            <option value="other">Something else</option>
+          </select>
+          <label for="description">Details</label>
+          <textarea id="description" name="description" rows="4" maxlength="500" placeholder="Where exactly, and what did you see?" required></textarea>
+          <span class="count" id="count">0 / 500</span>
+          <button type="submit">Submit report</button>
+        </form>
+        <p id="form-msg" class="msg" role="status"></p>
+      </section>
+
+      <section class="card">
+        <h2>Reports</h2>
+        <p class="sub">Newest first. Filter by area and status.</p>
+        <form id="filter-form" class="row">
+          <div><label for="filter-area">Area</label><input id="filter-area" placeholder="All areas"></div>
+          <div><label for="filter-status">Status</label>
+            <select id="filter-status">
+              <option value="open">Open</option>
+              <option value="in-progress">In progress</option>
+              <option value="resolved">Resolved</option>
+              <option value="">Any (needs an area)</option>
+            </select></div>
+          <div style="flex:0 0 auto"><button type="submit">Show reports</button></div>
+        </form>
+        <p id="list-msg" class="msg" role="status"></p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Reported</th><th>Area</th><th>Type</th><th>Details</th><th>Status</th><th class="admin-col" hidden>Admin</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <details>
+          <summary>Admin</summary>
+          <label for="admin-key">Admin key (kept only in this page, never stored)</label>
+          <input id="admin-key" type="password" autocomplete="off">
+        </details>
+      </section>
+    </div>
+  </main>
+  <footer>Built with S3 · CloudFront · API Gateway · Lambda · DynamoDB</footer>
+
+  <script src="config.js"></script>
+  <script>
+    const API = ((window.APP_CONFIG && window.APP_CONFIG.apiUrl) || "").replace(/\/$/, "");
+    const $ = (id) => document.getElementById(id);
+    if (!API) $("config-error").hidden = false;
+
+    function say(el, text, isError = false) {
+      el.textContent = text;
+      el.className = "msg" + (isError ? " error" : "");
+    }
+
+    // One place for every call to the API: sends JSON, throws an Error carrying the API's own message.
+    async function api(path, options = {}) {
+      const res = await fetch(API + path, options);
+      const data = res.status === 204 ? null : await res.json().catch(() => null);
+      if (!res.ok) throw new Error((data && data.message) || "Request failed (" + res.status + ")");
+      return data;
+    }
+
+    const label = (s) => s.replace(/-/g, " ");
+
+    function cell(text) {
+      const td = document.createElement("td");
+      td.textContent = text; // textContent (never innerHTML) means user-submitted text can't inject HTML or scripts
+      return td;
+    }
+
+    function renderRows(items) {
+      const body = $("rows");
+      body.replaceChildren();
+      const adminKey = $("admin-key").value;
+      document.querySelector(".admin-col").hidden = !adminKey;
+      for (const r of items) {
+        const tr = document.createElement("tr");
+        tr.append(cell(new Date(r.createdAt).toLocaleString()), cell(r.area), cell(label(r.category)), cell(r.description));
+        const status = cell("");
+        const badge = document.createElement("span");
+        badge.className = "badge " + r.status;
+        badge.textContent = label(r.status);
+        status.append(badge);
+        tr.append(status);
+        if (adminKey) {
+          const actions = document.createElement("td");
+          for (const next of ["in-progress", "resolved"]) {
+            if (next === r.status) continue;
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "small";
+            b.textContent = "Mark " + label(next);
+            b.addEventListener("click", () => changeStatus(r.reportId, next));
+            actions.append(b);
+          }
+          tr.append(actions);
+        }
+        body.append(tr);
+      }
+    }
+
+    async function loadReports() {
+      const area = $("filter-area").value.trim();
+      const status = $("filter-status").value;
+      if (!area && !status) return say($("list-msg"), "Type an area to see reports of any status.", true);
+      const query = new URLSearchParams();
+      if (area) query.set("area", area);
+      if (status) query.set("status", status);
+      say($("list-msg"), "Loading...");
+      try {
+        const data = await api("/reports?" + query);
+        renderRows(data.items);
+        say($("list-msg"), data.count ? data.count + " report(s), newest first." : "No reports found.");
+      } catch (err) {
+        say($("list-msg"), err.message, true);
+      }
+    }
+
+    async function changeStatus(reportId, status) {
+      try {
+        await api("/reports/" + encodeURIComponent(reportId) + "/status", {
+          method: "PATCH",
+          headers: { "content-type": "application/json", "x-admin-key": $("admin-key").value },
+          body: JSON.stringify({ status }),
+        });
+        setTimeout(loadReports, 1000); // indexes update a moment after the write
+      } catch (err) {
+        say($("list-msg"), err.message, true);
+      }
+    }
+
+    $("report-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const report = { area: $("area").value, category: $("category").value, description: $("description").value };
+      say($("form-msg"), "Sending...");
+      try {
+        await api("/reports", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(report) });
+        say($("form-msg"), "Thank you! Your report was submitted.");
+        event.target.reset();
+        $("filter-area").value = report.area;
+        $("filter-status").value = "open";
+        setTimeout(loadReports, 1000);
+      } catch (err) {
+        say($("form-msg"), err.message, true);
+      }
+    });
+
+    $("filter-form").addEventListener("submit", (event) => { event.preventDefault(); loadReports(); });
+    $("admin-key").addEventListener("change", loadReports);
+    if (API) loadReports();
+  </script>
+<script>
+    const counter = document.getElementById("count");
+    document.getElementById("description").addEventListener("input", (e) => { counter.textContent = e.target.value.length + " / 500"; });
+    document.getElementById("report-form").addEventListener("reset", () => setTimeout(() => { counter.textContent = "0 / 500"; }));
+  </script>
+</body>
+</html>

@@ -1,0 +1,365 @@
+# Community Waste Reporting App
+# Serverless: S3 + CloudFront (frontend), HTTP API + Lambda (backend), DynamoDB (data).
+# Deploy with: bash scripts/deploy.sh   (it builds the Lambda code, then deploys this template)
+AWSTemplateFormatVersion: 2010-09-09
+Description: Community Waste Reporting App (serverless, arm64, scale-to-zero)
+
+Parameters:
+  AdminKey:
+    Type: String
+    NoEcho: true # hides the value in the console and CLI output
+    MinLength: 12
+    Description: Secret that admins send in the x-admin-key header to change report status. scripts/deploy.sh generates one for you.
+
+  # Optional custom domain (leave both empty to use the CloudFront address). See docs/GUIDE.md, section 9.
+  DomainName:
+    Type: String
+    Default: ""
+    Description: Optional. Your site's domain, for example waste.example.com. Needs HostedZoneId too.
+  HostedZoneId:
+    Type: String
+    Default: ""
+    Description: Optional. ID of the Route 53 hosted zone that contains DomainName.
+
+Conditions:
+  UseCustomDomain: !Not [!Equals [!Ref DomainName, ""]]
+
+Rules:
+  DomainNeedsZone:
+    RuleCondition: !Not [!Equals [!Ref DomainName, ""]]
+    Assertions:
+      - Assert: !Not [!Equals [!Ref HostedZoneId, ""]]
+        AssertDescription: Set HostedZoneId when you set DomainName.
+      # CloudFront only accepts ACM certificates that live in us-east-1.
+      - Assert: !Equals [!Ref "AWS::Region", us-east-1]
+        AssertDescription: A custom domain needs the stack to be deployed in us-east-1 (CloudFront requires its certificate there).
+
+Resources:
+  # ---------------------------------------------------------------- Frontend
+  # Private bucket: only CloudFront can read it (see FrontendBucketCdnPolicy).
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+
+  CdnOac:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub ${AWS::StackName}-cdn
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  FrontendBucketCdnPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub ${FrontendBucket.Arn}/*
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Cdn}
+
+  Cdn:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: Community Waste Reporting frontend
+        HttpVersion: http2and3
+        PriceClass: PriceClass_100 # fewest edge locations = cheapest
+        DefaultRootObject: index.html
+        Aliases: !If [UseCustomDomain, [!Ref DomainName], !Ref "AWS::NoValue"]
+        ViewerCertificate: !If
+          - UseCustomDomain
+          - AcmCertificateArn: !Ref Certificate
+            SslSupportMethod: sni-only
+            MinimumProtocolVersion: TLSv1.2_2021
+          - !Ref "AWS::NoValue"
+        Origins:
+          - Id: s3-frontend-bucket
+            DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: "" # empty because we use OAC, not the older OAI
+            OriginAccessControlId: !GetAtt CdnOac.Id
+        DefaultCacheBehavior:
+          TargetOriginId: s3-frontend-bucket
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # AWS managed "CachingOptimized"
+
+  # ---------------------------------------------------------------- Custom domain (optional)
+  # Free HTTPS certificate, validated automatically through a DNS record added to your hosted zone.
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Condition: UseCustomDomain
+    Properties:
+      DomainName: !Ref DomainName
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          HostedZoneId: !Ref HostedZoneId
+
+  # Z2FDTNDATAQYW2 is the fixed hosted zone ID that all CloudFront alias records use.
+  SiteRecordA:
+    Type: AWS::Route53::RecordSet
+    Condition: UseCustomDomain
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt Cdn.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+
+  SiteRecordAAAA:
+    Type: AWS::Route53::RecordSet
+    Condition: UseCustomDomain
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: AAAA
+      AliasTarget:
+        DNSName: !GetAtt Cdn.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+
+  # ---------------------------------------------------------------- Database
+  ReportsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST # no idle capacity to pay for (or power)
+      AttributeDefinitions:
+        - { AttributeName: pk, AttributeType: S }
+        - { AttributeName: sk, AttributeType: S }
+        - { AttributeName: area, AttributeType: S }
+        - { AttributeName: status, AttributeType: S }
+        - { AttributeName: createdAt, AttributeType: S }
+      KeySchema:
+        - { AttributeName: pk, KeyType: HASH }
+        - { AttributeName: sk, KeyType: RANGE }
+      GlobalSecondaryIndexes:
+        # "Show me the newest reports in <area>"
+        - IndexName: AreaIndex
+          KeySchema:
+            - { AttributeName: area, KeyType: HASH }
+            - { AttributeName: createdAt, KeyType: RANGE }
+          Projection: { ProjectionType: ALL }
+        # "Show me the newest reports with status <open|in-progress|resolved>"
+        - IndexName: StatusIndex
+          KeySchema:
+            - { AttributeName: status, KeyType: HASH }
+            - { AttributeName: createdAt, KeyType: RANGE }
+          Projection: { ProjectionType: ALL }
+      # DynamoDB deletes items automatically once expiresAt (epoch seconds) has passed.
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+
+  # ---------------------------------------------------------------- API
+  ReportsApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-reports-api
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowOrigins:
+          - "*" # fine for a demo; restrict to your CloudFront/custom domain later
+        AllowMethods: [GET, POST, PATCH, OPTIONS]
+        AllowHeaders: [content-type, x-admin-key]
+
+  ReportsApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref ReportsApi
+      StageName: $default
+      AutoDeploy: true
+      DefaultRouteSettings: # cost/abuse protection: caps requests per second
+        ThrottlingBurstLimit: 20
+        ThrottlingRateLimit: 10
+
+  # ---------------------------------------------------------------- SubmitReport (writes)
+  SubmitReportFnRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: write-reports # least privilege: only what this function does
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                Resource: !GetAtt ReportsTable.Arn
+
+  SubmitReportFn:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: POST /reports (validate and save) and PATCH /reports/{reportId}/status (admin only)
+      Runtime: python3.13
+      Handler: index.handler
+      Architectures: [arm64]
+      MemorySize: 256
+      Timeout: 10
+      Role: !GetAtt SubmitReportFnRole.Arn
+      Code: ../build/submit-report-fn
+      Environment:
+        Variables:
+          REPORTS_TABLE_TABLE_NAME: !Ref ReportsTable
+          ADMIN_KEY: !Ref AdminKey
+
+  SubmitReportFnLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${SubmitReportFn}
+      RetentionInDays: 14
+
+  SubmitReportFnPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt SubmitReportFn.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ReportsApi}/*
+
+  SubmitReportIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref ReportsApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt SubmitReportFn.Arn
+      PayloadFormatVersion: "2.0"
+
+  PostReportRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ReportsApi
+      RouteKey: POST /reports
+      Target: !Sub integrations/${SubmitReportIntegration}
+
+  PatchStatusRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ReportsApi
+      RouteKey: PATCH /reports/{reportId}/status
+      Target: !Sub integrations/${SubmitReportIntegration}
+
+  # ---------------------------------------------------------------- GetReports (reads)
+  GetReportsFnRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: read-reports # read-only: this function can never change data
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt ReportsTable.Arn
+                  - !Sub ${ReportsTable.Arn}/index/*
+
+  GetReportsFn:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: GET /reports (list by area or status) and GET /reports/{reportId}
+      Runtime: python3.13
+      Handler: index.handler
+      Architectures: [arm64]
+      MemorySize: 256
+      Timeout: 10
+      Role: !GetAtt GetReportsFnRole.Arn
+      Code: ../build/get-reports-fn
+      Environment:
+        Variables:
+          REPORTS_TABLE_TABLE_NAME: !Ref ReportsTable
+
+  GetReportsFnLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetReportsFn}
+      RetentionInDays: 14
+
+  GetReportsFnPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt GetReportsFn.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ReportsApi}/*
+
+  GetReportsIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref ReportsApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt GetReportsFn.Arn
+      PayloadFormatVersion: "2.0"
+
+  ListReportsRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ReportsApi
+      RouteKey: GET /reports
+      Target: !Sub integrations/${GetReportsIntegration}
+
+  GetReportRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ReportsApi
+      RouteKey: GET /reports/{reportId}
+      Target: !Sub integrations/${GetReportsIntegration}
+
+Outputs:
+  FrontendBucketBucketName:
+    Value: !Ref FrontendBucket
+  ReportsApiUrl:
+    Value: !GetAtt ReportsApi.ApiEndpoint
+  ReportsTableTableName:
+    Value: !Ref ReportsTable
+  CdnDomainName:
+    Value: !GetAtt Cdn.DomainName
+  CdnDistributionId:
+    Value: !Ref Cdn
