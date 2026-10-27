@@ -1,13 +1,17 @@
 # Community Waste Reporting App
 
+<img width="1531" height="748" alt="image" src="https://github.com/user-attachments/assets/0a6f71a3-e2d2-46fa-a233-21927e971825" />
+
+<img width="1441" height="644" alt="architecture" src="https://github.com/user-attachments/assets/5198923f-3124-417e-963e-fd82e2d2f113" />
+
+
+
 A serverless app where residents report illegal dumping, overflowing bins and missed collections, with a
-public dashboard and an admin-only way to mark reports in progress or resolved.
+public dashboard and an admin-only way to mark reports in progress or resolved. This was started with an AWS Architecture Advisor’s starter kit and then extended
 
 **Stack:** S3 + CloudFront (website) · API Gateway HTTP API + 2 Lambda functions (arm64, Python 3.13) ·
 DynamoDB on-demand with two indexes and TTL · CloudFormation (everything as code) · optional Route 53 + ACM custom domain.
 
-> New to AWS? Start with **[docs/GUIDE.md](docs/GUIDE.md)**. It walks through setup, deployment, testing,
-> how the code works, and how to explain the design (including its sustainability benefits) in an interview.
 
 ## Quick start
 
@@ -36,19 +40,9 @@ bash scripts/destroy.sh      # remove everything when you're done
 Categories: `illegal-dumping`, `overflowing-bin`, `missed-collection`, `littering`, `recycling-contamination`, `hazardous-waste`, `e-waste`, `other`. Reports are deleted automatically
 90 days after creation (the clock restarts when a report is resolved).
 
-## What's here
 
-| Path | What |
-|---|---|
-| `frontend/index.html` | The website: report form, dashboard, admin buttons (plain HTML + `fetch()`) |
-| `functions/submit-report-fn/` | Lambda for `POST /reports` and the admin `PATCH`, with tests |
-| `functions/get-reports-fn/` | Read-only Lambda for the two `GET` routes, with tests |
-| `infrastructure/template.yaml` | CloudFormation template: every AWS resource |
-| `scripts/` | `check.sh`, `deploy.sh`, `smoke-test.sh`, `destroy.sh`, `build.py` |
-| `docs/GUIDE.md` | Beginner's guide |
-| `ARCHITECTURE.md`, `architecture.drawio` | The design, its cost estimate, and an editable diagram (open in diagrams.net) |
 
-## Known limits (deliberate, for a starter project)
+
 
 - Anyone can submit reports, so a determined person could spam them. API throttling caps the damage; add a CAPTCHA or Cognito for real use.
 - The admin key is a shared secret held in a Lambda environment variable. Cognito (or at least Secrets Manager) is the proper upgrade.
