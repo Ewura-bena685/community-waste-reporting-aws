@@ -1,6 +1,6 @@
 # Community Waste Reporting App
 
-<img width="1531" height="748" alt="image" src="https://github.com/user-attachments/assets/0a6f71a3-e2d2-46fa-a233-21927e971825" />
+<img width="1297" height="761" alt="image" src="https://github.com/user-attachments/assets/b51f4dbb-e71e-4e09-b78d-5e95aa6be029" />
 
 <img width="1441" height="644" alt="architecture" src="https://github.com/user-attachments/assets/5198923f-3124-417e-963e-fd82e2d2f113" />
 
