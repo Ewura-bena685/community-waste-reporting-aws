@@ -25,7 +25,16 @@ from botocore.exceptions import ClientError
 dynamodb = boto3.resource("dynamodb")
 
 MAX_LENGTH = 500
-CATEGORIES = ("illegal-dumping", "overflowing-bin", "missed-collection", "other")
+CATEGORIES = (
+    "illegal-dumping",
+    "overflowing-bin",
+    "missed-collection",
+    "littering",
+    "recycling-contamination",
+    "hazardous-waste",
+    "e-waste",
+    "other",
+)
 STATUSES = ("in-progress", "resolved")  # statuses an admin may set ("open" is only the starting value)
 RETENTION_DAYS = 90
 

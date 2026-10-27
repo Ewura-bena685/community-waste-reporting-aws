@@ -88,6 +88,16 @@ def test_500_characters_is_allowed() -> None:
     assert call("POST /reports", {**VALID, "description": "x" * 500})["statusCode"] == 201
 
 
+@pytest.mark.parametrize(
+    "category",
+    ["littering", "recycling-contamination", "hazardous-waste", "e-waste"],
+)
+def test_sustainability_categories_are_allowed(category: str) -> None:
+    response = call("POST /reports", {**VALID, "category": category})
+    assert response["statusCode"] == 201
+    assert json.loads(response["body"])["category"] == category
+
+
 @pytest.mark.parametrize("body", ["not json", "[1, 2]", None])
 def test_bad_bodies_are_rejected(body: Any) -> None:
     assert call("POST /reports", body)["statusCode"] == 400

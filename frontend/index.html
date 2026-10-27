@@ -1,63 +1,111 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Community Waste Reporting</title>
+  <meta name="description" content="Report neighbourhood waste concerns and find practical ways to reduce, reuse and recycle.">
+  <meta name="theme-color" content="#176b45">
+  <title>Community Green | Waste Reporting</title>
+  <script>
+    const savedTheme = localStorage.getItem("community-green-theme");
+    if (savedTheme === "light" || savedTheme === "dark") document.documentElement.dataset.theme = savedTheme;
+  </script>
   <style>
     :root {
-      --bg:#f3f7f4; --surface:#fff; --text:#13231a; --muted:#587062; --line:#dbe5de; --brand:#1f7a4d; --brand-ink:#fff;
-      --danger:#b3261e; --shadow:0 1px 2px rgb(16 40 26/.06),0 8px 24px rgb(16 40 26/.08);
-      --open-bg:#fff1d6; --open-fg:#8a5a00; --prog-bg:#dbeafe; --prog-fg:#1e4fa3; --done-bg:#d9f2e3; --done-fg:#16623b;
+      color-scheme: light;
+      --bg:#f5f7f2; --surface:#fff; --text:#17271e; --muted:#617267; --line:#dce5dc;
+      --control-border:#7d8d81;
+      --brand:#176b45; --brand-dark:#104d34; --brand-soft:#e8f3eb; --danger:#a42e27;
+      --shadow:0 12px 32px rgb(24 52 35/.07);
+      --open-bg:#fff1d6; --open-fg:#805500; --prog-bg:#e4edfb; --prog-fg:#234f91; --done-bg:#e2f3e8; --done-fg:#17623c;
     }
-    @media (prefers-color-scheme: dark) {
-      :root { --bg:#0d1511; --surface:#16211a; --text:#e8f1ea; --muted:#9db2a4; --line:#263629; --brand:#4fbf85; --brand-ink:#07140c;
-        --danger:#f2837b; --shadow:0 1px 2px #0006,0 8px 24px #0005;
-        --open-bg:#3a2e12; --open-fg:#f3c76a; --prog-bg:#16284a; --prog-fg:#8db6f5; --done-bg:#143824; --done-fg:#7fd9a4; }
+    :root[data-theme="dark"] {
+      color-scheme:dark; --bg:#101713; --surface:#19231d; --text:#edf4ee; --muted:#a7b8ac; --line:#304037;
+        --control-border:#66776b;
+        --brand:#70cf98; --brand-dark:#a8e8bd; --brand-soft:#20392a; --danger:#f08d84; --shadow:0 12px 32px #0004;
+        --open-bg:#3a2e12; --open-fg:#f3c76a; --prog-bg:#16284a; --prog-fg:#a9c5f7; --done-bg:#143824; --done-fg:#91e0ad;
     }
     * { box-sizing:border-box; }
-    html { scroll-behavior:smooth; }
-    body { margin:0; font:16px/1.55 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text); }
-    .wrap { max-width:72rem; margin:0 auto; padding:0 1.25rem; }
-    .hero { background:radial-gradient(60rem 20rem at 85% -20%,#3aa56d55,transparent),linear-gradient(135deg,#0f3d25,#1f7a4d); color:#fff; padding:3rem 0 5.5rem; }
-    .eyebrow { display:inline-block; margin:0 0 .75rem; padding:.2rem .7rem; border:1px solid #ffffff55; border-radius:999px; font-size:.8rem; letter-spacing:.06em; text-transform:uppercase; }
-    h1 { margin:0 0 .5rem; font-size:clamp(1.8rem,4vw,2.8rem); line-height:1.15; letter-spacing:-.02em; }
-    .lead { margin:0; max-width:38rem; font-size:1.1rem; color:#e1f2e8; }
-    main { margin-top:-3rem; padding-bottom:2rem; }
-    .layout { display:grid; gap:1.25rem; align-items:start; }
-    @media (min-width:60rem) { .layout { grid-template-columns:22rem 1fr; } .form-card { position:sticky; top:1rem; } }
-    .card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:1.5rem; box-shadow:var(--shadow); min-width:0; }
-    h2 { margin:0 0 .25rem; font-size:1.25rem; letter-spacing:-.01em; }
-    .sub { margin:0 0 1rem; color:var(--muted); font-size:.95rem; }
-    label { display:block; margin:1rem 0 .35rem; font-size:.9rem; font-weight:600; }
+    html { scroll-behavior:smooth; scroll-padding-top:1rem; }
+    body { margin:0; font:16px/1.6 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text); }
+    .wrap { width:min(100% - 2rem,76rem); margin:0 auto; }
+    .hero { color:#fff; background:radial-gradient(50rem 26rem at 85% -55%,#5cb77d77,transparent),linear-gradient(125deg,#103b29,#176b45); }
+    .topbar { min-height:4.5rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; border-bottom:1px solid #ffffff2b; }
+    .brand { display:flex; align-items:center; gap:.65rem; color:#fff; font-weight:750; letter-spacing:-.02em; }
+    .brand-mark { display:grid; place-items:center; width:2rem; height:2rem; border:1px solid #ffffff77; border-radius:10px; font-size:1.15rem; }
+    .top-links { display:flex; flex-wrap:wrap; gap:1.1rem; }
+    .top-link { color:#e3f2e7; font-size:.9rem; text-decoration:none; }
+    .top-link:hover { color:#fff; text-decoration:underline; }
+    .skip-link { position:fixed; z-index:10; top:.5rem; left:.5rem; padding:.6rem 1rem; transform:translateY(-160%); border-radius:8px; background:var(--surface); color:var(--text); font-weight:700; }
+    .skip-link:focus { transform:translateY(0); }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    .theme-toggle { min-height:2.4rem; padding:.35rem .7rem; border:1px solid #ffffff77; background:#ffffff14; color:#fff; font-size:.82rem; }
+    .theme-toggle:hover { background:#ffffff28; }
+    .hero-content { display:grid; grid-template-columns:minmax(0,1fr) minmax(15rem,28rem); align-items:center; gap:1.5rem; padding:2.5rem 0 4.7rem; }
+    .hero-illustration { display:block; width:100%; max-height:19rem; object-fit:contain; filter:drop-shadow(0 1rem 1.5rem #06281755); }
+    .eyebrow { margin:0 0 .65rem; color:#c9eed5; font-size:.78rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { margin:0 0 .7rem; font-size:clamp(2rem,5vw,3.5rem); line-height:1.08; letter-spacing:-.045em; }
+    .lead { margin:0; max-width:43rem; color:#e1f2e8; font-size:clamp(1rem,2vw,1.15rem); }
+    main { padding:0 0 3rem; }
+    .layout { display:grid; gap:1.25rem; align-items:start; margin-top:-2.75rem; }
+    @media (min-width:62rem) { .layout { grid-template-columns:minmax(18rem,.78fr) minmax(0,1.55fr); } .form-card { position:sticky; top:1rem; } }
+    .card { min-width:0; padding:clamp(1.1rem,2.5vw,1.6rem); background:var(--surface); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); }
+    h2 { margin:0 0 .2rem; font-size:1.3rem; line-height:1.3; letter-spacing:-.025em; }
+    .sub { margin:0 0 1.15rem; color:var(--muted); font-size:.94rem; }
+    label { display:block; margin:1rem 0 .35rem; font-size:.88rem; font-weight:650; }
     input,select,textarea,button { font:inherit; color:inherit; }
-    input,select,textarea { width:100%; padding:.65rem .8rem; background:var(--bg); border:1px solid var(--line); border-radius:10px; transition:border-color .15s,box-shadow .15s; }
+    input,select,textarea { width:100%; min-height:2.8rem; padding:.65rem .8rem; background:var(--bg); border:1px solid var(--control-border); border-radius:10px; transition:border-color .15s,box-shadow .15s; }
     select { appearance:none; padding-right:2.2rem; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23788' stroke-width='2'%3E%3Cpath d='m1 1 5 5 5-5'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right .8rem center; }
-    textarea { resize:vertical; min-height:6rem; }
-    input:focus-visible,select:focus-visible,textarea:focus-visible { outline:none; border-color:var(--brand); box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 28%,transparent); }
-    button { cursor:pointer; padding:.7rem 1.2rem; border:0; border-radius:10px; background:var(--brand); color:var(--brand-ink); font-weight:600; transition:transform .1s,filter .15s; }
+    textarea { resize:vertical; min-height:7rem; }
+    input:focus-visible,select:focus-visible,textarea:focus-visible { border-color:var(--brand); }
+    a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible { outline:3px solid var(--brand); outline-offset:3px; }
+    button { cursor:pointer; min-height:2.75rem; padding:.65rem 1.1rem; border:0; border-radius:10px; background:var(--brand); color:#fff; font-weight:700; transition:transform .1s,filter .15s; }
+    :root[data-theme="dark"] button:not(.theme-toggle) { color:#102116; }
+    :root[data-theme="dark"] select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23a7b8ac' stroke-width='2'%3E%3Cpath d='m1 1 5 5 5-5'/%3E%3C/svg%3E"); }
     button:hover { filter:brightness(1.08); } button:active { transform:translateY(1px); }
-    button:focus-visible { outline:3px solid color-mix(in srgb,var(--brand) 45%,transparent); outline-offset:2px; }
-    .form-card button { width:100%; margin-top:1.1rem; }
-    button.small { width:auto; margin:0 .35rem .25rem 0; padding:.25rem .7rem; font-size:.8rem; background:transparent; color:var(--brand); border:1px solid var(--brand); }
-    button.small:hover { background:var(--brand); color:var(--brand-ink); filter:none; }
+    button:disabled { cursor:wait; opacity:.65; }
+    .form-card button[type="submit"] { width:100%; margin-top:1.1rem; }
+    button.small { min-height:2rem; width:auto; margin:0 .35rem .25rem 0; padding:.2rem .65rem; font-size:.78rem; background:transparent; color:var(--brand-dark); border:1px solid var(--brand); }
+    button.small:hover { background:var(--brand); color:#fff; filter:none; }
     .count { display:block; margin-top:.25rem; text-align:right; font-size:.8rem; color:var(--muted); }
     .row { display:flex; gap:.75rem; flex-wrap:wrap; align-items:flex-end; }
-    .row > div { flex:1 1 11rem; } .row label { margin-top:0; } .row button { width:auto; margin:0; }
-    .msg { min-height:1.4rem; margin:.75rem 0 0; font-size:.92rem; color:var(--muted); } .msg.error { color:var(--danger); font-weight:600; }
+    .row > div { flex:1 1 9rem; } .row label { margin-top:0; } .row button { width:auto; }
+    .msg { min-height:1.4rem; margin:.65rem 0 0; font-size:.9rem; color:var(--muted); }
+    .msg.error { color:var(--danger); font-weight:650; }
+    .stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.65rem; margin:1.1rem 0; }
+    .stat { padding:.7rem .8rem; background:var(--bg); border:1px solid var(--line); border-radius:12px; }
+    .stat strong { display:block; font-size:1.35rem; line-height:1.2; }
+    .stat span { color:var(--muted); font-size:.78rem; }
     .table-wrap { margin-top:.5rem; overflow-x:auto; }
     table { width:100%; border-collapse:collapse; }
-    th { text-align:left; padding:.6rem .5rem; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); border-bottom:2px solid var(--line); }
+    th { text-align:left; padding:.6rem .5rem; font-size:.72rem; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); border-bottom:2px solid var(--line); }
     td { padding:.8rem .5rem; border-bottom:1px solid var(--line); vertical-align:top; overflow-wrap:anywhere; }
-    tbody tr:hover { background:color-mix(in srgb,var(--brand) 6%,transparent); }
-    td:first-child { white-space:nowrap; color:var(--muted); font-size:.9rem; } td:nth-child(3) { text-transform:capitalize; }
-    .badge { display:inline-block; padding:.15rem .65rem; border-radius:999px; font-size:.8rem; font-weight:600; text-transform:capitalize; white-space:nowrap; }
+    tbody tr:hover { background:color-mix(in srgb,var(--brand) 5%,transparent); }
+    td:first-child { white-space:nowrap; color:var(--muted); font-size:.84rem; } td:nth-child(3) { text-transform:capitalize; }
+    .badge { display:inline-block; padding:.15rem .65rem; border-radius:999px; font-size:.78rem; font-weight:700; text-transform:capitalize; white-space:nowrap; }
     .badge.open { background:var(--open-bg); color:var(--open-fg); } .badge.in-progress { background:var(--prog-bg); color:var(--prog-fg); } .badge.resolved { background:var(--done-bg); color:var(--done-fg); }
-    details { margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--line); } summary { cursor:pointer; font-weight:600; color:var(--muted); }
-    footer { padding:1rem 1.25rem 2.5rem; text-align:center; color:var(--muted); font-size:.85rem; }
-    @media (max-width:40rem) {
-      thead { display:none; } tr { display:block; padding:.75rem 0; border-bottom:1px solid var(--line); } td { display:flex; gap:.75rem; padding:.2rem 0; border:0; }
-      td::before { flex:0 0 5.5rem; font-size:.75rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
+    details { margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--line); } summary { cursor:pointer; font-weight:700; color:var(--muted); }
+    .sustainability { margin-top:1.25rem; padding:clamp(1.25rem,3vw,2rem); background:var(--brand-soft); border:1px solid var(--line); border-radius:18px; }
+    .sustainability-head { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:end; gap:.5rem 1rem; margin-bottom:1.1rem; }
+    .sustainability-head .sub { margin:0; max-width:35rem; }
+    .tips { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr)); gap:.8rem; }
+    .tip { padding:1rem; background:var(--surface); border:1px solid var(--line); border-radius:14px; }
+    .tip-icon { display:block; margin-bottom:.45rem; font-size:1.35rem; }
+    .tip h3 { margin:0 0 .35rem; font-size:1rem; }
+    .tip p { margin:0; color:var(--muted); font-size:.88rem; }
+    .sustainability-note { margin:1rem 0 0; color:var(--muted); font-size:.82rem; }
+    footer { padding:1.25rem 1rem 2.5rem; text-align:center; color:var(--muted); font-size:.82rem; }
+    footer p { margin:.25rem 0; }
+    @media (max-width:42rem) {
+      .wrap { width:min(100% - 1.25rem,76rem); }
+      .topbar { min-height:3.8rem; } .top-links { justify-content:flex-end; gap:.55rem; } .top-link { font-size:.8rem; }
+      .theme-toggle { min-height:2rem; padding:.25rem .5rem; font-size:.75rem; }
+      .hero-content { grid-template-columns:1fr; gap:.75rem; padding:2.5rem 0 4rem; }
+      .hero-illustration { width:min(100%,19rem); max-height:12rem; justify-self:center; }
+      .layout { margin-top:-2rem; }
+      thead { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+      tr { display:block; padding:.7rem 0; border-bottom:1px solid var(--line); } td { display:flex; gap:.75rem; padding:.2rem 0; border:0; }
+      td::before { flex:0 0 5rem; font-size:.7rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
       td:nth-child(1)::before { content:"Reported"; } td:nth-child(2)::before { content:"Area"; } td:nth-child(3)::before { content:"Type"; }
       td:nth-child(4)::before { content:"Details"; } td:nth-child(5)::before { content:"Status"; } td:nth-child(6)::before { content:"Admin"; }
     }
@@ -65,71 +113,124 @@
   </style>
 </head>
 <body>
-  <header class="hero"><div class="wrap">
-    <p class="eyebrow">Serverless on AWS</p>
-    <h1>Community Waste Reporting</h1>
-    <p class="lead">Spotted illegal dumping, an overflowing bin or a missed collection? Report it so it can be dealt with.</p>
-  </div></header>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="hero">
+    <div class="wrap">
+      <nav class="topbar" aria-label="Main navigation">
+        <a class="brand" href="#" aria-label="Community Green home"><span class="brand-mark" aria-hidden="true">↗</span> Community Green</a>
+        <div class="top-links">
+          <a class="top-link" href="#report">Report an issue</a>
+          <a class="top-link" href="#sustainability">Sustainability ideas ↓</a>
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">Dark mode</button>
+        </div>
+      </nav>
+      <div class="hero-content">
+        <div>
+          <p class="eyebrow">Cleaner neighbourhoods start here</p>
+          <h1>Small reports.<br>Lasting change.</h1>
+          <p class="lead">Help your community respond to waste issues, protect shared spaces and make more sustainable choices.</p>
+        </div>
+        <img class="hero-illustration" src="community-illustration.svg" alt="Neighbours working together to keep their community green and clean" width="420" height="280">
+      </div>
+    </div>
+  </header>
 
-  <main class="wrap">
+  <main class="wrap" id="main">
     <p id="config-error" class="msg error" hidden>The API address is missing. Deploy with scripts/deploy.sh, which creates config.js.</p>
     <div class="layout">
-      <section class="card form-card">
-        <h2>Report a problem</h2>
-        <p class="sub">It takes under a minute.</p>
+      <section class="card form-card" id="report">
+        <h2>Report a concern</h2>
+        <p class="sub">Share what you noticed so local teams can follow up.</p>
         <form id="report-form">
-          <label for="area">Area</label>
-          <input id="area" name="area" placeholder="e.g. downtown" maxlength="500" required>
-          <label for="category">What happened?</label>
+          <label for="area">Neighbourhood or area</label>
+          <input id="area" name="area" placeholder="e.g. Downtown" maxlength="500" autocomplete="address-level2" required>
+          <label for="category">What did you notice?</label>
           <select id="category" name="category" required>
             <option value="illegal-dumping">Illegal dumping</option>
             <option value="overflowing-bin">Overflowing bin</option>
             <option value="missed-collection">Missed collection</option>
-            <option value="other">Something else</option>
+            <option value="littering">Litter in a public space</option>
+            <option value="recycling-contamination">Recycling contamination</option>
+            <option value="hazardous-waste">Hazardous waste</option>
+            <option value="e-waste">Electronic waste</option>
+            <option value="other">Other waste concern</option>
           </select>
-          <label for="description">Details</label>
-          <textarea id="description" name="description" rows="4" maxlength="500" placeholder="Where exactly, and what did you see?" required></textarea>
-          <span class="count" id="count">0 / 500</span>
-          <button type="submit">Submit report</button>
+          <label for="description">What should the team know?</label>
+          <textarea id="description" name="description" rows="4" maxlength="500" placeholder="Add a nearby landmark and a brief description. Please don't include personal information." aria-describedby="description-help count" required></textarea>
+          <span id="description-help" class="count" style="text-align:left">Avoid sharing names or other personal details.</span>
+          <span class="count" id="count" aria-live="polite">0 / 500</span>
+          <button type="submit">Send report</button>
         </form>
-        <p id="form-msg" class="msg" role="status"></p>
+        <p id="form-msg" class="msg" role="status" aria-live="polite"></p>
       </section>
 
       <section class="card">
-        <h2>Reports</h2>
-        <p class="sub">Newest first. Filter by area and status.</p>
+        <h2>Community reports</h2>
+        <p class="sub">Follow recent concerns and see their current status.</p>
         <form id="filter-form" class="row">
-          <div><label for="filter-area">Area</label><input id="filter-area" placeholder="All areas"></div>
+          <div><label for="filter-area">Area</label><input id="filter-area" placeholder="All areas" autocomplete="address-level2"></div>
           <div><label for="filter-status">Status</label>
             <select id="filter-status">
               <option value="open">Open</option>
               <option value="in-progress">In progress</option>
               <option value="resolved">Resolved</option>
-              <option value="">Any (needs an area)</option>
+              <option value="">Any status</option>
             </select></div>
-          <div style="flex:0 0 auto"><button type="submit">Show reports</button></div>
+          <div style="flex:0 0 auto"><button type="submit">Apply filters</button></div>
         </form>
-        <p id="list-msg" class="msg" role="status"></p>
+        <p class="count" style="text-align:left">Summary for the reports currently shown</p>
+        <div class="stats" aria-label="Report status summary">
+          <div class="stat"><strong id="open-count">0</strong><span>Open</span></div>
+          <div class="stat"><strong id="progress-count">0</strong><span>In progress</span></div>
+          <div class="stat"><strong id="resolved-count">0</strong><span>Resolved</span></div>
+        </div>
+        <p id="list-msg" class="msg" role="status" aria-live="polite"></p>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Reported</th><th>Area</th><th>Type</th><th>Details</th><th>Status</th><th class="admin-col" hidden>Admin</th></tr></thead>
+            <caption class="visually-hidden">Community waste reports and their current status</caption>
+            <thead><tr><th scope="col">Reported</th><th scope="col">Area</th><th scope="col">Concern</th><th scope="col">Details</th><th scope="col">Status</th><th scope="col" class="admin-col" hidden>Admin actions</th></tr></thead>
             <tbody id="rows"></tbody>
           </table>
         </div>
         <details>
-          <summary>Admin</summary>
-          <label for="admin-key">Admin key (kept only in this page, never stored)</label>
-          <input id="admin-key" type="password" autocomplete="off">
+          <summary>Team tools</summary>
+          <label for="admin-key">Administrator key</label>
+          <input id="admin-key" type="password" autocomplete="off" aria-describedby="admin-help">
+          <span id="admin-help" class="count" style="text-align:left">Only used for this session; it is not saved by this page.</span>
         </details>
       </section>
     </div>
   </main>
-  <footer>Built with S3 · CloudFront · API Gateway · Lambda · DynamoDB</footer>
+  <section class="wrap sustainability" id="sustainability" aria-labelledby="sustainability-title">
+    <div class="sustainability-head">
+      <div><p class="eyebrow" style="color:var(--brand)">Everyday sustainability</p><h2 id="sustainability-title">Good habits make less waste</h2></div>
+      <p class="sub">A few practical ways to reduce waste before it reaches the street or landfill.</p>
+    </div>
+    <div class="tips">
+      <article class="tip"><span class="tip-icon" aria-hidden="true">↻</span><h3>Choose reusable first</h3><p>Carry a refillable bottle or bag, and repair or donate usable items instead of throwing them away.</p></article>
+      <article class="tip"><span class="tip-icon" aria-hidden="true">♻</span><h3>Recycle with care</h3><p>Keep recyclables clean and dry, and check local guidance so non-recyclable items don't contaminate a whole load.</p></article>
+      <article class="tip"><span class="tip-icon" aria-hidden="true">✿</span><h3>Compost food scraps</h3><p>Where a local service is available, separate suitable food and garden waste from general rubbish.</p></article>
+      <article class="tip"><span class="tip-icon" aria-hidden="true">⌁</span><h3>Handle special waste safely</h3><p>Take batteries, electronics, chemicals and other hazardous items to an approved collection point.</p></article>
+    </div>
+    <p class="sustainability-note">Collection rules and drop-off services vary by location. Check your local authority's guidance before sorting or disposing of waste.</p>
+  </section>
+  <footer><p>Community Green · Making neighbourhoods cleaner, together.</p><p>Built with S3 · CloudFront · API Gateway · Lambda · DynamoDB</p></footer>
 
   <script src="config.js"></script>
   <script>
     const API = ((window.APP_CONFIG && window.APP_CONFIG.apiUrl) || "").replace(/\/$/, "");
     const $ = (id) => document.getElementById(id);
+    const themeToggle = $("theme-toggle");
+    function setTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      themeToggle.textContent = "Dark mode";
+      themeToggle.setAttribute("aria-pressed", String(theme === "dark"));
+      localStorage.setItem("community-green-theme", theme);
+    }
+    setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
+    themeToggle.addEventListener("click", () => {
+      setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
+    });
     if (!API) $("config-error").hidden = false;
 
     function say(el, text, isError = false) {
@@ -139,13 +240,25 @@
 
     // One place for every call to the API: sends JSON, throws an Error carrying the API's own message.
     async function api(path, options = {}) {
+      if (!API) throw new Error("The reporting service is not configured. Please try again later.");
       const res = await fetch(API + path, options);
       const data = res.status === 204 ? null : await res.json().catch(() => null);
       if (!res.ok) throw new Error((data && data.message) || "Request failed (" + res.status + ")");
       return data;
     }
 
-    const label = (s) => s.replace(/-/g, " ");
+    const labels = {
+      "illegal-dumping": "Illegal dumping",
+      "overflowing-bin": "Overflowing bin",
+      "missed-collection": "Missed collection",
+      "recycling-contamination": "Recycling contamination",
+      "hazardous-waste": "Hazardous waste",
+      "e-waste": "Electronic waste",
+      littering: "Littering",
+      "in-progress": "In progress",
+    };
+    const label = (s) => labels[s] || s.replace(/-/g, " ");
+    let currentItems = [];
 
     function cell(text) {
       const td = document.createElement("td");
@@ -154,13 +267,17 @@
     }
 
     function renderRows(items) {
+      currentItems = items;
       const body = $("rows");
       body.replaceChildren();
       const adminKey = $("admin-key").value;
       document.querySelector(".admin-col").hidden = !adminKey;
+      const counts = { open: 0, "in-progress": 0, resolved: 0 };
       for (const r of items) {
+        if (Object.hasOwn(counts, r.status)) counts[r.status] += 1;
         const tr = document.createElement("tr");
-        tr.append(cell(new Date(r.createdAt).toLocaleString()), cell(r.area), cell(label(r.category)), cell(r.description));
+        const reported = new Date(r.createdAt);
+        tr.append(cell(Number.isNaN(reported.getTime()) ? "Unknown" : reported.toLocaleString()), cell(r.area), cell(label(r.category)), cell(r.description));
         const status = cell("");
         const badge = document.createElement("span");
         badge.className = "badge " + r.status;
@@ -182,21 +299,28 @@
         }
         body.append(tr);
       }
+      $("open-count").textContent = counts.open;
+      $("progress-count").textContent = counts["in-progress"];
+      $("resolved-count").textContent = counts.resolved;
     }
 
     async function loadReports() {
       const area = $("filter-area").value.trim();
       const status = $("filter-status").value;
-      if (!area && !status) return say($("list-msg"), "Type an area to see reports of any status.", true);
+      if (!area && !status) {
+        renderRows([]);
+        return say($("list-msg"), "Enter an area to view reports with any status.", true);
+      }
       const query = new URLSearchParams();
       if (area) query.set("area", area);
       if (status) query.set("status", status);
-      say($("list-msg"), "Loading...");
+      say($("list-msg"), "Loading reports...");
       try {
         const data = await api("/reports?" + query);
         renderRows(data.items);
-        say($("list-msg"), data.count ? data.count + " report(s), newest first." : "No reports found.");
+        say($("list-msg"), data.count ? data.count + " report(s) shown, newest first." : "No reports found for these filters.");
       } catch (err) {
+        renderRows([]);
         say($("list-msg"), err.message, true);
       }
     }
@@ -218,25 +342,27 @@
       event.preventDefault();
       const report = { area: $("area").value, category: $("category").value, description: $("description").value };
       say($("form-msg"), "Sending...");
+      const submit = event.currentTarget.querySelector('button[type="submit"]');
+      submit.disabled = true;
       try {
         await api("/reports", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(report) });
-        say($("form-msg"), "Thank you! Your report was submitted.");
+        say($("form-msg"), "Thank you. Your report has been submitted.");
         event.target.reset();
         $("filter-area").value = report.area;
         $("filter-status").value = "open";
         setTimeout(loadReports, 1000);
       } catch (err) {
         say($("form-msg"), err.message, true);
+      } finally {
+        submit.disabled = false;
       }
     });
 
     $("filter-form").addEventListener("submit", (event) => { event.preventDefault(); loadReports(); });
-    $("admin-key").addEventListener("change", loadReports);
+    $("admin-key").addEventListener("change", () => renderRows(currentItems));
     if (API) loadReports();
-  </script>
-<script>
     const counter = document.getElementById("count");
-    document.getElementById("description").addEventListener("input", (e) => { counter.textContent = e.target.value.length + " / 500"; });
+    document.getElementById("description").addEventListener("input", (event) => { counter.textContent = event.target.value.length + " / 500"; });
     document.getElementById("report-form").addEventListener("reset", () => setTimeout(() => { counter.textContent = "0 / 500"; }));
   </script>
 </body>

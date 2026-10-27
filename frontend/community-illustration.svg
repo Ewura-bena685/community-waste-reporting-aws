@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="280" viewBox="0 0 420 280" fill="none">
+  <title>Neighbours caring for a clean, green community</title>
+  <defs>
+    <linearGradient id="sky" x1="210" y1="0" x2="210" y2="250" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D8F4D9"/>
+      <stop offset="1" stop-color="#A9DEC0"/>
+    </linearGradient>
+    <linearGradient id="hill" x1="210" y1="137" x2="210" y2="263" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#70C98B"/>
+      <stop offset="1" stop-color="#26865C"/>
+    </linearGradient>
+  </defs>
+  <rect x="14" y="12" width="392" height="250" rx="38" fill="url(#sky)"/>
+  <circle cx="334" cy="65" r="28" fill="#F8D77B"/>
+  <path d="M14 171c45-37 84-26 128-7 51 21 86-12 128-15 52-4 87 27 136 10v75H14v-63Z" fill="#8FD29A"/>
+  <path d="M14 208c54-31 93-15 138 4 54 22 96-20 148-19 38 1 69 21 106 18v51H14v-54Z" fill="url(#hill)"/>
+  <path d="M0 256h420v24H0z" fill="#F0E7C9"/>
+  <path d="m105 202 20-46h43l20 46" fill="#FBF8EC"/>
+  <path d="M117 173h58v32h-58z" fill="#F7F1DE"/>
+  <path d="m110 174 36-31 36 31" fill="#D88B59"/>
+  <path d="M136 184h18v21h-18z" fill="#8EC0A0"/>
+  <path d="M284 160h31v61h-31z" fill="#26764D"/>
+  <path d="M279 157h41l-5 10h-31l-5-10Z" fill="#145638"/>
+  <path d="M296 172v37" stroke="#B6E9C0" stroke-width="3" stroke-linecap="round"/>
+  <path d="M335 183c0-15 11-27 25-27s25 12 25 27v33h-50v-33Z" fill="#F3A36F"/>
+  <path d="M340 184h40v29h-40z" fill="#F8C48F"/>
+  <path d="M351 192h18" stroke="#B56E43" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="360" cy="146" r="13" fill="#8A543B"/>
+  <path d="M347 146c1-13 9-20 20-16 7 3 8 10 7 17-4-4-8-7-13-8-3 4-8 6-14 7Z" fill="#243E32"/>
+  <path d="M354 216v29m17-29v29" stroke="#315943" stroke-width="7" stroke-linecap="round"/>
+  <path d="M86 218c0-14 10-25 23-25s23 11 23 25v25H86v-25Z" fill="#F1B083"/>
+  <circle cx="109" cy="180" r="13" fill="#D89468"/>
+  <path d="M96 180c0-13 7-20 18-18 8 1 12 8 11 18-6-4-12-7-18-6-2 3-6 5-11 6Z" fill="#45362C"/>
+  <path d="m93 205-17 20m47-20 14 14" stroke="#D89468" stroke-width="7" stroke-linecap="round"/>
+  <path d="M97 242v13m24-13v13" stroke="#315943" stroke-width="7" stroke-linecap="round"/>
+  <path d="m264 200 11-7 8 6-10 22-10-4 1-17Z" fill="#F5C45E"/>
+  <path d="m258 197 8-2 8 5-3 8-12-4-1-7Z" fill="#FFF2C8"/>
+  <path d="M244 225c8-12 10-20 10-29" stroke="#27754E" stroke-width="4" stroke-linecap="round"/>
+  <path d="M253 198c-15-2-22-10-22-19 13 0 22 6 22 19Zm1-3c1-14 8-22 18-24 2 12-4 21-18 24Z" fill="#31875A"/>
+  <path d="M60 226c2-13 10-20 21-19-1 12-8 19-21 19Zm-3-7c-11-3-16-10-14-19 10 3 16 9 14 19Z" fill="#43A66A"/>
+  <path d="M213 237c3-15 12-23 24-22-2 13-10 21-24 22Zm-3-8c-12-4-17-12-14-21 11 4 17 11 14 21Z" fill="#43A66A"/>
+</svg>

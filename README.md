@@ -33,7 +33,7 @@ bash scripts/destroy.sh      # remove everything when you're done
 | `GET /reports/{reportId}` | anyone | One report |
 | `PATCH /reports/{reportId}/status` | admin | Body `{"status":"in-progress"}` or `{"status":"resolved"}`; needs the `x-admin-key` header |
 
-Categories: `illegal-dumping`, `overflowing-bin`, `missed-collection`, `other`. Reports are deleted automatically
+Categories: `illegal-dumping`, `overflowing-bin`, `missed-collection`, `littering`, `recycling-contamination`, `hazardous-waste`, `e-waste`, `other`. Reports are deleted automatically
 90 days after creation (the clock restarts when a report is resolved).
 
 ## What's here

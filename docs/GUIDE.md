@@ -199,7 +199,7 @@ Try the PATCH without the `x-admin-key` header too and confirm you get `401`.
 ### Task 2: validation, in `functions/submit-report-fn/index.py`
 `validate_report()` checks that the body is a JSON object and that `area`, `category` and `description` are non-empty strings of at most 500 characters, and that the category is on the allowed list. It returns either clean data or an error message, and `create_report()` turns an error into an HTTP `400`. Validating before saving keeps junk out of the database, which also means less data to store.
 
-*Exercise:* add a new category (for example `"graffiti"`) to `CATEGORIES`, add it to the `<select>` in `frontend/index.html`, add a test, and run `python -m pytest`.
+The report form includes sustainability-related concerns such as littering, recycling contamination, hazardous waste and electronic waste. New categories must be added to `CATEGORIES`, the `<select>` in `frontend/index.html`, and the corresponding tests.
 
 ### Task 3: `GET /reports/{reportId}`, in `functions/get-reports-fn/index.py`
 `get_report()` calls `GetItem`, DynamoDB's fastest read (it uses the exact key). The key is `pk = REPORT#<id>`, `sk = REPORT`. Unknown or expired IDs return `404`.
